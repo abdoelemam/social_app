@@ -1,62 +1,76 @@
-import mongoose, { Types } from "mongoose";
+import mongoose, { Document, Model, Types } from "mongoose";
 
 export enum Gendertype {
-    male = "male",
-    female = "female",
-    other = "other",
+  male = "male",
+  female = "female",
+  other = "other",
 }
 
 export enum Roletype {
-    user = "user",
-    admin = "admin",
+  user = "user",
+  admin = "admin",
 }
 
-export interface User {
-    Id: Types.ObjectId;
-    fname: string;
-    lname: string;
-    username?: string;
-    email: string;
-    password: string;
-    age: number;
-    gender: Gendertype;
-    phone?: string;
-    role?: Roletype;
-    createdAt: Date;
-    updatedAt: Date;
-    // country: string;
-    // city: string;
-    // image: string;
-    // status: string;
+export enum Provider {
+  google = "google",
+  facebook = "facebook",
+  local = "local",
 }
 
-const userschema = new mongoose.Schema<User>({
-    fname: { type: String, required: true },
-    lname: { type: String, required: true },
+export interface User extends Document {
+  _id: Types.ObjectId;
+  fname?: string;
+  lname?: string;
+  username?: string;
+  email: string;
+  password: string;
+  age?: number;
+  gender?: Gendertype;
+  phone?: string;
+  role?: Roletype;
+  confirmed?: boolean;
+  otp?: string;
+  image?: string;
+  changeCardentails?: Date;
+  provider?: Provider; // or Provider.facebook or Provider.local
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const userschema = new mongoose.Schema<User>(
+  {
+    fname: { type: String },
+    lname: { type: String },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true , min: 3, max: 20 },
-    age: { type: Number, required: true },
-    gender: { type: String, enum: Gendertype, required: true },
-    phone: { type: String, required: true, unique: true },
-    role: { type: String, enum: Roletype, default: Roletype.user }, 
-    // country: { type: String, required: false },
-    // city: { type: String, required: false },
-    // image: { type: String, required: false },
-    // status: { type: String, required: false },
-}, {
+    password: { type: String },
+    age: { type: Number },
+    gender: { type: String, enum: Object.values(Gendertype) },
+    phone: { type: String,  unique: true },
+    role: { type: String, enum: Object.values(Roletype), default: Roletype.user },
+    confirmed: { type: Boolean, default: false },
+    otp: { type: String },
+    image: { type: String },
+    changeCardentails: { type: Date },
+    provider: { type: String, enum: Object.values(Provider), default: Provider.local }, // or Provider.facebook or Provider.local, default: Provider.local
+  },
+  {
     timestamps: true,
     toObject: { virtuals: true },
     toJSON: { virtuals: true },
-})
+  }
+);
 
-userschema.virtual("username").set(function(value){
+userschema
+  .virtual("username")
+  .set(function (this: User, value: string) {
     const [fname, lname] = value.split(" ");
     this.set({ fname, lname });
-}).get(function () {
+  })
+  .get(function (this: User) {
     return this.fname + " " + this.lname;
-})
+  });
 
-
-const userModel = mongoose.models.User || mongoose.model<User>("User", userschema);
+const userModel: Model<User> =
+  mongoose.models.User || mongoose.model<User>("User", userschema);
 
 export default userModel;

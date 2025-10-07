@@ -1,6 +1,6 @@
 
 
-export const emailTemplate = (OTP: string) => {
+export const emailTemplate = (OTP: string, subject: string) => {
     return `<!DOCTYPE html>
                 <html>
                 <head>
@@ -36,7 +36,7 @@ export const emailTemplate = (OTP: string) => {
                 </tr>
                 <tr>
                 <td>
-                <h1 style="padding-top:25px; color:#630E2B">Email Confirmation</h1>
+                <h1 style="padding-top:25px; color:#630E2B">${subject}</h1>
                 </td>
                 </tr>
                 <tr>

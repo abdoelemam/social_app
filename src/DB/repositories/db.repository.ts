@@ -1,4 +1,4 @@
-import { HydratedDocument, Model, ProjectionType, RootFilterQuery } from "mongoose";
+import { HydratedDocument, Model, ProjectionType, RootFilterQuery, UpdateQuery, UpdateWriteOpResult } from "mongoose";
 
 export abstract class DbRepository<TDocument> {
     constructor(protected readonly  model:Model<TDocument>) { }
@@ -7,8 +7,12 @@ export abstract class DbRepository<TDocument> {
         return  this.model.create(data);
     }
 
-    async findOne(filter:RootFilterQuery<TDocument>, select?: ProjectionType<TDocument>): Promise<HydratedDocument<TDocument> | null []>{
-        return  this.model.find(filter);
+    async findOne(filter:RootFilterQuery<TDocument>, select?: ProjectionType<TDocument>): Promise<HydratedDocument<TDocument> | null>{
+        return this.model.findOne(filter);
+    }
+
+    async updateOne(filter:RootFilterQuery<TDocument>, data:UpdateQuery<TDocument>): Promise<UpdateWriteOpResult| null> {
+        return  this.model.updateOne(filter, data);
     }
 
 

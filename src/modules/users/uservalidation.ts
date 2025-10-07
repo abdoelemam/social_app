@@ -1,11 +1,24 @@
 import  z from "zod";
 
 
-export const signupSchema = {
+export const confirmEmailSchema = {
   body: z.object({
-    username: z.string(),
+    email: z.string().email(),
+    otp: z.string(),
+  }),
+};
+
+export const signinSchema = {
+  body: z.object({
     email: z.string().email(),
     password: z.string(),
+  }),
+};;
+
+
+export const signupSchema = {
+  body: signinSchema.body.extend({
+    username: z.string(),
     cpassword: z.string(),
     age: z.number(),
     gender: z.string(),
@@ -14,4 +27,5 @@ export const signupSchema = {
 };;
 
 
-// export type SignupSchemaType = z.infer<typeof signupSchema>;  
+export type SignupSchemaType = z.infer<typeof signupSchema>;  
+export type ConfirmEmailSchemaType = z.infer<typeof confirmEmailSchema["body"]>;
