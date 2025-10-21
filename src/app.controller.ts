@@ -8,7 +8,11 @@ import path from "path";
 import { AppError } from "./utils/classError.js";
 import userRouter from "./modules/users/user.controller.js";
 import connectDB from "./DB/connectionDB.js";
+import { deletefile, deletefiles, getFile, listfiles } from "./utils/s3.config.js";
+import { promisify } from "util";
+import { pipeline } from "stream";
 
+const writepipeline = promisify(pipeline);
 
 config({path: path.resolve("./config/.env")});
 
@@ -37,6 +41,53 @@ const bootstarp = async () => {
     app.get("/", (_req:express.Request, res:express.Response) => {
         return res.status(200).json({message:"welcome with my soccial app"});
     })
+
+    // app.get("/getfiles", async (req:express.Request, res:express.Response) => {
+    //     const response = await listfiles({path:"general"})
+    //     const keys = response.Contents?.map((file) => file.Key)
+    //     return res.status(200).json({response: keys});
+    // })
+
+    // app.get("/upload/deletefiles", async (req:express.Request, res:express.Response) => {
+    //     // const {path} = req.params as  unknown as {path:string[] }
+    //     // const key = path.join("/");
+    //     const response = await   deletefiles({
+    //         urls: [
+    //             "general/fd649eba-d97f-4c13-a92c-c64c0461888a-ai.jpg",
+    //             "general/5e4dec99-501a-42b2-9bba-c2cc6df7cbfc-لقطة_شاشة_2023-06-13_140420.png"
+    //         ]
+    //     })
+
+    //     return res.status(200).json({response});
+    // })
+
+    // app.get("/upload/delete/*path", async (req:express.Request, res:express.Response) => {
+    //     const {path} = req.params as  unknown as {path:string[] }
+    //     const key = path.join("/");
+    //     const response = await   deletefile({key})
+
+    //     return res.status(200).json({response});
+    // })
+
+
+    // app.get("/upload/*path", async (req:express.Request, res:express.Response) => {
+    //     const {path} = req.params as  unknown as {path:string[] }
+    //     const key = path.join("/");
+    //     const {downloadname} = req.query as {downloadname:string} 
+    //     const response = await   getFile({key})
+    //     const stream = response.Body as NodeJS.ReadableStream;
+    //     res.setHeader("Content-Type", response.ContentType!);
+    //     // stream.pipe(res);
+
+    //     if(downloadname){
+    //         res.setHeader("Content-Disposition", `attachment; filename=${downloadname} || ${path.join("/").split("/").pop()}`);
+    //     }
+    //     await writepipeline(stream, res);
+
+    //     // return res.status(200).json({response});
+    // })
+
+    
 
     app.use("/users", userRouter);
 

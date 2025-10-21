@@ -14,6 +14,12 @@ import { RevokeTokenRepository } from "../../DB/repositories/RevokeToken.js";
 import RevokeToken from "../../model/revoketoken.js";
 import { v4 as uuidv4 } from 'uuid'; // or import { v4 as uuidv4 } from 'uuid'; if you are using Typescript
 import { OAuth2Client } from 'google-auth-library'; // or import { OAuth2Client } from 'google-auth-library'; if you are using Typescript
+import {  createuploadPresignedUrl, largefileUpload, s3Client, uploadFile, uploadFiles } from "../../utils/s3.config.js";
+import { ObjectCannedACL, PutObjectCommand } from "@aws-sdk/client-s3";
+import { createReadStream } from "fs";
+import { StorageEnum } from "../../middleware/multer.cloud.js";
+import { eventEmitter } from "../../utils/events.js";
+
 
 
 class UserService{
@@ -215,6 +221,132 @@ class UserService{
         const hashedPassword = await hashPassword(password);
         await this._userModel.updateOne({ email }, { password: hashedPassword, otp: "" });
         return res.status(200).json({ message: "password reset  successful" });
+    }
+
+    uploadImage = async (req: Request, res: Response) => {
+        // const { file } = req;
+        // if (!file) {
+        //     throw new AppError("file not found", 400);
+        // }
+        
+        // const { Key, url } = await uploadFile({ file, storageType: StorageEnum.cloud }) as { Key: string, url: string }; 
+        // const { Key } = await largefileUpload({ file, storageType: StorageEnum.disk }) as { Key: string }; 
+        // const urls: string[] = await uploadFiles({ files: files as Express.Multer.File[] }) 
+        
+        // It's good practice to return the file URL after uploading
+        // const fileUrl = `https://${process.env.BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+
+        // const user = await this._userModel.findOneAndUpdate({ _id: req.user?._id }, { image: Key, tempimage: req.user.image });
+        
+        // eventEmitter.emit("uploadprofileimage", {userId: req.user?._id, oldkey: req.user.tempimage, newkey: Key, expiresIn: 30 });
+
+        const { originalname, ContentType } = req.body;
+        const presignedUrl = await createuploadPresignedUrl({ originalname , ContentType: ContentType });
+
+
+
+        return res.status(200).json({ message: "File uploaded successfully" ,  presignedUrl   });
+    }
+
+
+    freezeAccount = async (req: Request, res: Response) => {
+        const { userId } = req.params;
+
+        const user = await this._userModel.findOneAndUpdate(
+            { 
+                _id: userId || req.user._id, 
+                frozen: false 
+            }, 
+            { 
+                frozen: true, 
+                frozenAt: new Date()
+            },
+            { new: true }
+        );
+        
+        if(!user){
+            throw new AppError("User not found or already frozen", 404);
+        }
+        
+        return res.status(200).json({ message: "Account frozen successfully" });
+    }
+
+
+    
+    unfreezeAccount = async (req: Request, res: Response) => {
+        const { userId } = req.params;
+        
+        const user = await this._userModel.findOneAndUpdate(
+        { 
+            _id: userId,
+            frozen: true, 
+        },
+        { 
+            $set: {
+                frozen: false, 
+                frozenAt: null
+            }
+        },
+        { new: true } 
+        );
+
+        if (!user) {
+            throw new AppError("User not found or not frozen", 404);
+        }
+
+        return res.status(200).json({ message: "Account unfrozen successfully" });
+    }
+
+
+    
+    deleteAccount = async (req: Request, res: Response) => {
+        const { userId } = req.params;
+        
+        const user = await this._userModel.findOneAndUpdate(
+            { 
+                _id: userId || req.user._id,
+                DeletedAt: null 
+            }, 
+            { 
+                DeletedBy: req.user._id, 
+                DeletedAt: new Date(),
+                frozen: true 
+            },
+            { new: true }
+        );
+
+        if(!user){
+            throw new AppError("User not found or already deleted", 404);
+        }
+        return res.status(200).json({ message: "Account deleted successfully" });
+    }
+
+    
+     
+    restoreAccount = async (req: Request, res: Response) => {
+        const { userId } = req.params;
+        
+        const user = await this._userModel.findOneAndUpdate(
+            { 
+                _id: userId,
+                DeletedAt: { $ne: null } 
+            }, 
+            { 
+                $set: {
+                    DeletedAt: null,
+                    DeletedBy: null,
+                    frozen: false, 
+                    restoredAt: new Date(),
+                    restoredBy: req.user._id
+                }
+            },
+            { new: true }
+        );
+
+        if(!user){
+            throw new AppError("User not found or not deleted", 404);
+        }
+        return res.status(200).json({ message: "Account restored successfully" });
     }
 
 
