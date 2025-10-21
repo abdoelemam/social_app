@@ -31,8 +31,15 @@ export interface User extends Document {
   confirmed?: boolean;
   otp?: string;
   image?: string;
+  tempimage?: string;
   changeCardentails?: Date;
   provider?: Provider; // or Provider.facebook or Provider.local
+  DeletedAt?: Date;
+  DeletedBy?: Types.ObjectId;
+  restoredAt?: Date;
+  frozen?: boolean;
+  frozenAt?: Date;
+  restoredBy?: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -50,7 +57,14 @@ const userschema = new mongoose.Schema<User>(
     confirmed: { type: Boolean, default: false },
     otp: { type: String },
     image: { type: String },
+    tempimage: { type: String },
     changeCardentails: { type: Date },
+    frozen: { type: Boolean, default: false },
+    frozenAt: { type: Date },
+    DeletedAt: { type: Date },
+    DeletedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    restoredAt: { type: Date },
+    restoredBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     provider: { type: String, enum: Object.values(Provider), default: Provider.local }, // or Provider.facebook or Provider.local, default: Provider.local
   },
   {

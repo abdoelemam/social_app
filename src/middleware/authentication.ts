@@ -35,20 +35,26 @@ export const authentication =  (tokenType:Tokentype = Tokentype.access) => {
         if (!user) {
            throw new AppError("user not found", 400);
         }
-             
-        if(req.url !== "/refreshToken"){
-            if(await  _revokeTokenModel.findOne({tokenId: decoded.jti! })) 
-            { throw new AppError("token revoked", 400) } ;        
-        
-            if(user.changeCardentails!.getTime() > (decoded.iat! * 1000)){
-                throw new AppError("token has expired", 400);
-            }
+        if(user.frozen){
+            throw new AppError("account  frozen", 400);
         }
+        if(user.DeletedAt){
+            throw new AppError("account deleted", 400);
+        }
+             
+        // if(req.url !== "/refreshtoken"){
+        //     if(await  _revokeTokenModel.findOne({tokenId: decoded.jti! })) 
+        //     { throw new AppError("token revoked", 400) } ;        
+        
+        //     if(user.changeCardentails!.getTime() > (decoded.iat! * 1000)){
+        //         throw new AppError("token has expired", 400);
+        //     }
+        // }
 
         // if(await _userModel.findOne({ _id: decoded.id, changeCardentails: { $gt: decoded.iat! * 1000 } })){
         //     throw new AppError("token has expired", 400);
         // }
-
+        
        
         req.user = user as Request["user"];
         req.decoded = decoded;
