@@ -11,7 +11,16 @@ export const validate = (schema: schematype) => {
         for(const key of Object.keys(schema)){
             const typedKey = key as reqtype;
             if(!schema[typedKey]) continue;
-            
+             
+            if(req.file){
+                req.body.attachments = req.file
+            }
+
+            if(req.files){
+                console.log(req.files)
+                req.body.attachments = req.files 
+            }
+
             const result = schema[typedKey].safeParse(req[typedKey]);
             if(!result.success){
                 validatederrors.push(result.error)

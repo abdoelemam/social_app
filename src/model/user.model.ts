@@ -40,6 +40,7 @@ export interface User extends Document {
   frozen?: boolean;
   frozenAt?: Date;
   restoredBy?: Types.ObjectId;
+  friends?: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -65,6 +66,7 @@ const userschema = new mongoose.Schema<User>(
     DeletedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     restoredAt: { type: Date },
     restoredBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    friends: { type: [mongoose.Schema.Types.ObjectId], ref: "User" },
     provider: { type: String, enum: Object.values(Provider), default: Provider.local }, // or Provider.facebook or Provider.local, default: Provider.local
   },
   {

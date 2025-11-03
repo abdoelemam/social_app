@@ -112,7 +112,7 @@ export const uploadFiles = async ({
 
     const Urls:  string[] = [];
     await Promise.all(files.map(async (file) => {
-        const  key =    await uploadFile({ storageType, file, Bucket, path:"allfiles", ACL });
+        const  key =    await uploadFile({ storageType, file, Bucket, path: path, ACL });
         Urls.push(key.url);
     }));
     return Urls;

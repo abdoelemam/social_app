@@ -11,6 +11,8 @@ import connectDB from "./DB/connectionDB.js";
 import { deletefile, deletefiles, getFile, listfiles } from "./utils/s3.config.js";
 import { promisify } from "util";
 import { pipeline } from "stream";
+import postRouter from "./modules/posts/post.controller.js";
+import { commentRouter } from "./modules/comments/comment.controller.js";
 
 const writepipeline = promisify(pipeline);
 
@@ -90,6 +92,8 @@ const bootstarp = async () => {
     
 
     app.use("/users", userRouter);
+    app.use("/posts", postRouter);
+    app.use("/comments", commentRouter);
 
     // ❌ أي Route مش موجود - 404 handler
     app.use((req: Request, res: Response, next: NextFunction) => {
