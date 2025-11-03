@@ -41,6 +41,6 @@ export const MulterHost = ({filetypes = filevalidation.image, storageType = Stor
     }
 
     const upload = multer({ storage: storage, fileFilter })
-    
+    console.log(upload)
     return upload
 }

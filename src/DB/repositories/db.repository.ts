@@ -23,5 +23,9 @@ export abstract class DbRepository<TDocument> {
         return  this.model.deleteOne(filter);
     }
 
+    async find(filter:RootFilterQuery<TDocument>): Promise<HydratedDocument<TDocument>[]>{
+        return  this.model.find(filter);
+    }
+
 
 }
